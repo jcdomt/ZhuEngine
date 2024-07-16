@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -12,15 +11,12 @@ import (
 func SiteAutoRun(sites []*Site) {
 	for _, v := range sites {
 		if v.Config.Autorun {
-			var err error
+			var cmd *exec.Cmd
 			if !isInSameDir(v.Config.Exec, "./") {
 				strs := strings.Split(v.Config.Exec, "/")
 				execName := strs[len(strs)-1]
 				parentDir := getParentDir(v.Config.Exec)
 
-				fmt.Println("Changing directory to:", parentDir)
-
-				var cmd *exec.Cmd
 				if runtime.GOOS == "windows" {
 					cmd = exec.Command("cmd.exe", "/C", "start", execName)
 				} else {
@@ -28,18 +24,12 @@ func SiteAutoRun(sites []*Site) {
 				}
 
 				cmd.Dir = parentDir
-				err := cmd.Run()
-				if err != nil {
-					fmt.Println("Error:", err)
-				}
 			} else {
-				cmd := exec.Command(v.Config.Exec)
-				err := cmd.Run()
-				if err != nil {
-					fmt.Println("Error:", err)
-				}
+				cmd = exec.Command(v.Config.Exec)
+
 			}
 
+			err := cmd.Run()
 			if err != nil {
 				log.Error(v.Config.Exec, "启动失败：", err)
 			} else {
