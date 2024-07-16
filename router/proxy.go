@@ -12,6 +12,7 @@ type Pxy struct{}
 func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	url := req.Host + req.URL.Path
 	site := getRequestSite(url)
+
 	if site == nil {
 		rw.WriteHeader(http.StatusBadGateway)
 		return

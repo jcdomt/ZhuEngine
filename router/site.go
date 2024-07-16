@@ -29,7 +29,7 @@ func init() {
 	Sites_SubPatter = make(map[string]*Site)
 }
 
-func LoadSitesRouter(conf *config.Config) {
+func LoadSitesRouter(conf *config.Config) []*Site {
 	sites, site1, site2 := LoadSites(conf)
 	// 保存到全局变量
 	Sites = sites
@@ -39,6 +39,7 @@ func LoadSitesRouter(conf *config.Config) {
 	for _, v := range site2 {
 		Sites_SubPatter[v.SubPatter] = v
 	}
+	return sites
 }
 
 func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
