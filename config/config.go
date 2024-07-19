@@ -3,6 +3,7 @@ package config
 type Config struct {
 	ZhuEngine *ZeConfig
 	Web       *WebConfig
+	Cgi       map[string]*CgiConfig
 }
 
 func GetConfig() *Config {
@@ -11,5 +12,7 @@ func GetConfig() *Config {
 
 	conf.ZhuEngine = GetZeConfig()
 	conf.Web = GetWebConfig()
+	conf.Cgi = make(map[string]*CgiConfig)
+	conf.Cgi = getCgiConfig()
 	return conf
 }

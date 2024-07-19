@@ -3,8 +3,9 @@ package router
 
 import (
 	"ZhuEngine/site"
-	"io"
 	"net/http"
+	"net/http/cgi"
+	"path/filepath"
 	"strings"
 )
 
@@ -12,18 +13,43 @@ type Pxy struct{}
 
 func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	url := req.Host + req.URL.Path
-	site := getRequestSite(url)
+	s := getRequestSite(url)
 
-	if site == nil {
+	if s == nil {
 		rw.WriteHeader(http.StatusBadGateway)
 		return
 	}
-	r := site.SendHttp(rw, req)
-	if r != nil {
-		io.Copy(rw, r.Body)
-	} else {
-		rw.WriteHeader(http.StatusBadGateway)
+	if req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "text/html; charset=utf-8")
 	}
+	if s.CgiEnable {
+		// 启用了 CGI 功能
+		filename := strings.TrimPrefix(req.URL.Path, "/")
+		if filename == "" {
+			// 使用默认 CGI 文件名
+			filename = s.CgiDefaultFilename
+		}
+		scriptPath := filepath.Join(s.Config.Server, filename)
+		handler := &cgi.Handler{
+			Path: s.CgiPath,
+			Dir:  s.Config.Server,
+			Root: "/",
+			Env: []string{
+				"REDIRECT_STATUS=200",
+				"SCRIPT_FILENAME=" + scriptPath,
+			},
+		}
+		handler.ServeHTTP(rw, req)
+	} else {
+		s.SendHttp(rw, req)
+	}
+
+	// r := s.SendHttp(rw, req)
+	// if r != nil {
+	// 	io.Copy(rw, r.Body)
+	// } else {
+	// 	rw.WriteHeader(http.StatusBadGateway)
+	// }
 }
 
 func getRequestSite(url string) *site.Site {

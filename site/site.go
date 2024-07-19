@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/cgi"
+	"path/filepath"
 	"strings"
 )
 
@@ -17,6 +19,12 @@ type Site struct {
 	SubDomain string
 	SubPatter string
 	Sub       string
+
+	// CGI 功能
+	CgiEnable          bool // 是否启用 CGI
+	CgiHandler         *cgi.Handler
+	CgiPath            string
+	CgiDefaultFilename string
 }
 
 var Sites []*Site
@@ -66,6 +74,32 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 			site.Sub = site.Config.Url
 			sites_subpatter = append(sites_subpatter, site)
 		}
+		// CGI 功能判定
+		if v.CGI != "" {
+			// 存在 cgi 配置
+			site.CgiEnable = true
+			// 直接生成 CGI 处理器
+			// handler := &cgi.Handler{
+			// 	Path: conf.Cgi[v.CGI].CGI,     // 替换为实际的脚本路径
+			// 	Dir:  v.Server + "/index.php", // CGI 脚本的 URL 路径前缀
+			// }
+
+			handler := &cgi.Handler{
+				Path: conf.Cgi[v.CGI].CGI,
+				Dir:  filepath.Dir(v.Server),
+				Root: "/",
+				Env: []string{
+					"REDIRECT_STATUS=200",
+					"SCRIPT_FILENAME=" + v.Server, // 替换为实际的 PHP 脚本路径
+				},
+			}
+			site.CgiHandler = handler
+			site.CgiPath = conf.Cgi[v.CGI].CGI
+			site.CgiDefaultFilename = conf.Cgi[v.CGI].Default
+		} else {
+			site.CgiEnable = false
+		}
+
 		sites = append(sites, site)
 	}
 	return sites, sites_subdomain, sites_subpatter
