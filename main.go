@@ -3,6 +3,7 @@ package main
 import (
 	"ZhuEngine/config"
 	"ZhuEngine/router"
+	"ZhuEngine/site"
 	"net/http"
 	"strconv"
 
@@ -13,8 +14,8 @@ func main() {
 	// 读取配置
 	conf := config.GetConfig()
 
-	sites := router.LoadSitesRouter(conf)
-	router.SiteAutoRun(sites)
+	sites := site.LoadSitesRouter(conf)
+	site.SiteAutoRun(sites)
 
 	log.Info("启动主程序")
 	http.Handle("/", &router.Pxy{})

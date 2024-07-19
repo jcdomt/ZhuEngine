@@ -2,6 +2,7 @@
 package router
 
 import (
+	"ZhuEngine/site"
 	"io"
 	"net/http"
 	"strings"
@@ -25,17 +26,17 @@ func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func getRequestSite(url string) *Site {
+func getRequestSite(url string) *site.Site {
 	url = strings.Replace(url, "https://", "", 1)
 	url = strings.Replace(url, "http://", "", 1)
 	// 先判断子域名项目
 	sub_domain := strings.Split(url, ".")
-	value, exist := Sites_SubDomain[sub_domain[0]]
+	value, exist := site.Sites_SubDomain[sub_domain[0]]
 	if exist {
 		return value
 	} else {
 		sub_patter := strings.Split(url, "/")
-		value, exist := Sites_SubPatter[sub_patter[1]]
+		value, exist := site.Sites_SubPatter[sub_patter[1]]
 		if exist {
 			return value
 		} else {

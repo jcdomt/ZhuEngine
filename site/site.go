@@ -1,5 +1,5 @@
 // 负责站点的路由解析
-package router
+package site
 
 import (
 	"ZhuEngine/config"
