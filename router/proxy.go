@@ -4,7 +4,6 @@ package router
 import (
 	"ZhuEngine/site"
 	"net/http"
-	"net/http/cgi"
 	"path/filepath"
 	"strings"
 )
@@ -30,15 +29,7 @@ func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			filename = s.CgiDefaultFilename
 		}
 		scriptPath := filepath.Join(s.Config.Server, filename)
-		handler := &cgi.Handler{
-			Path: s.CgiPath,
-			Dir:  s.Config.Server,
-			Root: "/",
-			Env: []string{
-				"REDIRECT_STATUS=200",
-				"SCRIPT_FILENAME=" + scriptPath,
-			},
-		}
+		handler := s.GenerateCgiHandler(scriptPath)
 		handler.ServeHTTP(rw, req)
 	} else {
 		s.SendHttp(rw, req)

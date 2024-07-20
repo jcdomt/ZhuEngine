@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/cgi"
-	"path/filepath"
 	"strings"
 )
 
@@ -84,18 +83,24 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 			// 	Dir:  v.Server + "/index.php", // CGI 脚本的 URL 路径前缀
 			// }
 
-			handler := &cgi.Handler{
-				Path: conf.Cgi[v.CGI].CGI,
-				Dir:  filepath.Dir(v.Server),
-				Root: "/",
-				Env: []string{
-					"REDIRECT_STATUS=200",
-					"SCRIPT_FILENAME=" + v.Server, // 替换为实际的 PHP 脚本路径
-				},
-			}
-			site.CgiHandler = handler
+			// handler := &cgi.Handler{
+			// 	Path: conf.Cgi[v.CGI].CGI,
+			// 	Dir:  filepath.Dir(v.Server),
+			// 	Root: "/",
+			// 	Env: []string{
+			// 		"REDIRECT_STATUS=200",
+			// 		"SCRIPT_FILENAME=" + v.Server, // 替换为实际的 PHP 脚本路径
+			// 	},
+			// }
+
 			site.CgiPath = conf.Cgi[v.CGI].CGI
 			site.CgiDefaultFilename = conf.Cgi[v.CGI].Default
+			handler := &cgi.Handler{
+				Path: site.CgiPath,
+				Dir:  site.Config.Server,
+				Root: "/",
+			}
+			site.CgiHandler = handler
 		} else {
 			site.CgiEnable = false
 		}
