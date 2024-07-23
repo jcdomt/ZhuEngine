@@ -3,12 +3,9 @@ package site
 
 import (
 	"ZhuEngine/config"
-	"io"
-	"log"
-	"net"
-	"net/http"
 	"net/http/cgi"
-	"strings"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 type Site struct {
@@ -105,49 +102,8 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 			site.CgiEnable = false
 		}
 
+		log.Info(site.Name, "启动成功：", site.Config.Server)
 		sites = append(sites, site)
 	}
 	return sites, sites_subdomain, sites_subpatter
-}
-
-func (s *Site) SendHttp(rw http.ResponseWriter, req *http.Request) *http.Response {
-	transport := http.DefaultTransport
-
-	// step 1
-	outReq := new(http.Request)
-	*outReq = *req // this only does shallow copies of maps
-
-	// 正式的后台服务器地址
-	//target := "http://" + s.Config.Server
-	outReq.URL.Scheme = "http"
-	outReq.URL.Host = s.Config.Server
-	outReq.URL.Path = req.URL.Path
-	outReq.URL.RawQuery = req.URL.RawQuery
-
-	if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
-		if prior, ok := outReq.Header["X-Forwarded-For"]; ok {
-			clientIP = strings.Join(prior, ", ") + ", " + clientIP
-		}
-		outReq.Header.Set("X-Forwarded-For", clientIP)
-	}
-
-	// step 2
-	res, err := transport.RoundTrip(outReq)
-	if err != nil {
-		log.Default().Fatalln(err)
-		rw.WriteHeader(http.StatusBadGateway)
-		return nil
-	}
-
-	// step 3
-	for key, value := range res.Header {
-		for _, v := range value {
-			rw.Header().Add(key, v)
-		}
-	}
-
-	rw.WriteHeader(res.StatusCode)
-	io.Copy(rw, res.Body)
-	res.Body.Close()
-	return res
 }
