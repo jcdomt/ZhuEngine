@@ -18,7 +18,15 @@ func main() {
 	site.SiteAutoRun(sites)
 
 	log.Info("启动主程序")
-	http.Handle("/", &router.Pxy{})
+	handler := &router.Pxy{}
+	http.Handle("/", handler)
 	port_string := strconv.Itoa(conf.ZhuEngine.Port)
-	http.ListenAndServe("0.0.0.0:"+port_string, nil)
+	https_port_string := strconv.Itoa(conf.HTTPS.Port)
+	if !conf.HTTPS.Enable {
+		http.ListenAndServe("0.0.0.0:"+port_string, handler)
+	} else {
+		go http.ListenAndServe("0.0.0.0:"+port_string, handler)
+		log.Fatal(http.ListenAndServeTLS("0.0.0.0:"+https_port_string, conf.HTTPS.Crt, conf.HTTPS.Key, handler))
+	}
+
 }
