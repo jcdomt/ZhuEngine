@@ -46,6 +46,10 @@ func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 func getRequestSite(url string) *site.Site {
 	url = strings.Replace(url, "https://", "", 1)
 	url = strings.Replace(url, "http://", "", 1)
+	// 判断是否为根域名
+	if strings.HasPrefix(url, site.Site_RootDomain.URL) {
+		return site.Site_RootDomain
+	}
 	// 先判断子域名项目
 	sub_domain := strings.Split(url, ".")
 	value, exist := site.Sites_SubDomain[sub_domain[0]]

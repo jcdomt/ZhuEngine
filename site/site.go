@@ -26,6 +26,7 @@ type Site struct {
 var Sites []*Site
 var Sites_SubDomain map[string]*Site
 var Sites_SubPatter map[string]*Site
+var Site_RootDomain *Site
 
 func init() {
 	Sites = make([]*Site, 0)
@@ -69,6 +70,9 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 			site.SubPatter = site.Config.Url
 			site.Sub = site.Config.Url
 			sites_subpatter = append(sites_subpatter, site)
+		case "root_domain":
+			site.URL = conf.ZhuEngine.Host
+			Site_RootDomain = site
 		}
 		// CGI 功能判定
 		if v.CGI != "" {
