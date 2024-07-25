@@ -2,11 +2,11 @@ package site
 
 import (
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"strings"
 
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
 )
 
@@ -70,15 +70,17 @@ func (s *Site) handleWebSocket(rw http.ResponseWriter, req *http.Request) *http.
 
 	// 移除不允许重复的头部字段
 	reqHeaders := http.Header{}
-	// for k, v := range req.Header {
-	// 	reqHeaders[k] = v
-	// }
-	// reqHeaders.Del("Sec-WebSocket-Extensions")
-	// reqHeaders.Del("Sec-WebSocket-Version")
-	// reqHeaders.Del("Sec-WebSocket-Key")
-	// reqHeaders.Del("Upgrade")
-	// reqHeaders.Del("Connection")
-	reqHeaders.Add("cookie", req.Header.Get("cookie"))
+	for k, v := range req.Header {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Del("Sec-WebSocket-Extensions")
+	reqHeaders.Del("Sec-WebSocket-Version")
+	reqHeaders.Del("Sec-WebSocket-Key")
+	reqHeaders.Del("upgrade")
+	reqHeaders.Del("Connection")
+	reqHeaders.Del("Host")
+	reqHeaders.Del("Origin")
+	//reqHeaders.Add("cookie", req.Header.Get("cookie"))
 
 	backendConn, resp, err := dialer.Dial(targetURL, reqHeaders)
 	if err != nil {
@@ -92,6 +94,7 @@ func (s *Site) handleWebSocket(rw http.ResponseWriter, req *http.Request) *http.
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	clientConn, err := upgrader.Upgrade(rw, req, nil)
 	if err != nil {
+		log.Error(err)
 		http.Error(rw, "WebSocket upgrade error: "+err.Error(), http.StatusInternalServerError)
 		return nil
 	}
@@ -103,9 +106,10 @@ func (s *Site) handleWebSocket(rw http.ResponseWriter, req *http.Request) *http.
 	go proxyWebSocketConn(backendConn, clientConn, errc)
 
 	// 等待任何一方出错
-	if err := <-errc; err != nil {
-		log.Println("WebSocket proxy error:", err)
-	}
+	// if err := <-errc; err != nil {
+	// 	log.Println("WebSocket proxy error:", err)
+	// }
+	<-errc
 	return resp
 }
 
