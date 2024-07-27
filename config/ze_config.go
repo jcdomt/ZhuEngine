@@ -25,6 +25,7 @@ type HttpsConfig struct {
 	Crt    string `ini:"crt"`
 	Key    string `ini:"key"`
 	Port   int    `ini:"port"`
+	Force  bool   `ini:"force"`
 }
 
 func GetHttpsConfig() *HttpsConfig {

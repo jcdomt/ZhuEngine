@@ -8,7 +8,9 @@ import (
 	"strings"
 )
 
-type Pxy struct{}
+type Pxy struct {
+	force_https bool
+}
 
 func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	url := req.Host + req.URL.Path
@@ -64,4 +66,9 @@ func getRequestSite(url string) *site.Site {
 			return nil
 		}
 	}
+}
+
+// 设置是否强制 Https
+func (p *Pxy) SetForceHttps(force bool) {
+	p.force_https = force
 }

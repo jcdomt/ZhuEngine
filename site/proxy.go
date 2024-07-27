@@ -39,7 +39,6 @@ func (s *Site) SendHttp(rw http.ResponseWriter, req *http.Request) *http.Respons
 	// step 2
 	res, err := transport.RoundTrip(outReq)
 	if err != nil {
-		log.Default().Fatalln(err)
 		rw.WriteHeader(http.StatusBadGateway)
 		return nil
 	}

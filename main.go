@@ -25,7 +25,12 @@ func main() {
 	if !conf.HTTPS.Enable {
 		http.ListenAndServe("0.0.0.0:"+port_string, handler)
 	} else {
-		go http.ListenAndServe("0.0.0.0:"+port_string, handler)
+		if conf.HTTPS.Force {
+			go http.ListenAndServe("0.0.0.0:"+port_string, &router.ForceHttpsPxy{})
+		} else {
+			go http.ListenAndServe("0.0.0.0:"+port_string, handler)
+		}
+
 		log.Fatal(http.ListenAndServeTLS("0.0.0.0:"+https_port_string, conf.HTTPS.Crt, conf.HTTPS.Key, handler))
 	}
 
