@@ -44,7 +44,7 @@ func parseIniInclude(origin string, path string) (string, error) {
 	str := origin
 
 	for i, token := range str_arr {
-		index := strconv.Itoa(i)
+		index := strconv.Itoa(i + 1)
 		token = strings.TrimSuffix(token, "\r\n")
 		token = strings.TrimSuffix(token, "\r")
 		token = strings.TrimSuffix(token, "\n")
