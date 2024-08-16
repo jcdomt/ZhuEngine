@@ -1,8 +1,6 @@
 package config
 
-import (
-	"gopkg.in/ini.v1"
-)
+import "gopkg.in/ini.v1"
 
 type CgiConfig struct {
 	CGI     string `ini:"cgi"` // 相关 cgi 的目录

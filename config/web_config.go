@@ -1,7 +1,5 @@
 package config
 
-import "gopkg.in/ini.v1"
-
 type SiteConfig struct {
 	Type    string `ini:"type"`    // 类型：domain 子域名 url 子路劲
 	Url     string `ini:"url"`     // 子域名或子路径
@@ -17,7 +15,7 @@ type WebConfig struct {
 func GetWebConfig() *WebConfig {
 	wc := new(WebConfig)
 	wc.Sites = make(map[string]*SiteConfig)
-	inicfg, err := ini.Load("./conf/web.ini")
+	inicfg, err := parseIniConfigSyntax("./conf/web.ini")
 	if err != nil {
 		panic(err)
 	}
