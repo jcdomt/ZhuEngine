@@ -15,7 +15,7 @@ func parseIniConfigSyntax(filepath string) (*ini.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = os.WriteFile("./conf/runtime.ini", []byte(str), 0666)
+	err = os.WriteFile("./conf/runtime.ini", []byte("# 这是配置解析系统运行时产生的文件\n"+str), 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func parseIniInclude(origin string, path string) (string, error) {
 
 				temp_str, err := parseMain(filepath)
 				if err != nil {
-					return "", err
+					return "", errors.New(path + ": " + index + "行：文件路径解析错误：" + err.Error())
 				}
 				str = strings.Replace(str, token, temp_str, 1)
 			} else {
