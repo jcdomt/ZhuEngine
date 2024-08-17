@@ -40,14 +40,11 @@ func parseMain(filepath string) (string, error) {
 }
 
 func parseIniInclude(origin string, path string) (string, error) {
-	str_arr := strings.Split(origin, "\n")
+	tokens := getIniTokens(origin)
 	str := origin
 
-	for i, token := range str_arr {
+	for i, token := range tokens {
 		index := strconv.Itoa(i + 1)
-		token = strings.TrimSuffix(token, "\r\n")
-		token = strings.TrimSuffix(token, "\r")
-		token = strings.TrimSuffix(token, "\n")
 
 		if strings.HasPrefix(token, "#include ") {
 			re := regexp.MustCompile(`#include\s+(.+)`)
@@ -71,4 +68,18 @@ func parseIniInclude(origin string, path string) (string, error) {
 	}
 
 	return str, nil
+}
+
+func getIniTokens(str string) []string {
+	str_arr := strings.Split(str, "\n")
+	tokens := make([]string, 0)
+
+	for _, token := range str_arr {
+		token = strings.TrimSuffix(token, "\r\n")
+		token = strings.TrimSuffix(token, "\r")
+		token = strings.TrimSuffix(token, "\n")
+		tokens = append(tokens, token)
+	}
+
+	return tokens
 }

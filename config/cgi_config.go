@@ -1,7 +1,5 @@
 package config
 
-import "gopkg.in/ini.v1"
-
 type CgiConfig struct {
 	CGI     string `ini:"cgi"` // 相关 cgi 的目录
 	Default string `ini:"default"`
@@ -10,7 +8,7 @@ type CgiConfig struct {
 func getCgiConfig() map[string]*CgiConfig {
 	ret := make(map[string]*CgiConfig)
 
-	inicfg, err := ini.Load("./conf/cgi.ini")
+	inicfg, err := parseIniConfigSyntax("./conf/cgi.ini")
 	if err != nil {
 		panic(err)
 	}
