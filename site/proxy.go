@@ -23,9 +23,9 @@ func (s *Site) SendHttp(rw http.ResponseWriter, req *http.Request) *http.Respons
 	*outReq = *req // this only does shallow copies of maps
 
 	// 正式的后台服务器地址
-	//target := "http://" + s.Config.Server
+	//target := "http://" + s.Server
 	outReq.URL.Scheme = "http"
-	outReq.URL.Host = s.Config.Server
+	outReq.URL.Host = s.Server
 	outReq.URL.Path = req.URL.Path
 	outReq.URL.RawQuery = req.URL.RawQuery
 
@@ -65,7 +65,7 @@ func isWebSocketRequest(req *http.Request) bool {
 func (s *Site) handleWebSocket(rw http.ResponseWriter, req *http.Request) *http.Response {
 	// 初始化 WebSocket 连接到后端服务器
 	dialer := websocket.Dialer{}
-	targetURL := "ws://" + s.Config.Server + req.URL.Path + "?" + req.URL.RawQuery
+	targetURL := "ws://" + s.Server + req.URL.Path + "?" + req.URL.RawQuery
 
 	// 移除不允许重复的头部字段
 	reqHeaders := http.Header{}

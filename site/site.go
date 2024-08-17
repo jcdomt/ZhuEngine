@@ -11,6 +11,7 @@ import (
 type Site struct {
 	Name      string // 站点名称
 	Config    *config.SiteConfig
+	Server    string
 	URL       string
 	SubDomain string
 	SubPatter string
@@ -21,6 +22,11 @@ type Site struct {
 	CgiHandler         *cgi.Handler
 	CgiPath            string
 	CgiDefaultFilename string
+
+	// 负载均衡调度器功能
+	ScheduleEnable bool      // 是否启用
+	ScheduleType   string    // 调度手段
+	Schedulor      Schedulor // 调度器实例
 }
 
 var Sites []*Site
@@ -55,6 +61,7 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 		site := new(Site)
 		site.Name = k
 		site.Config = v
+		site.Server = v.Server
 		switch site.Config.Type {
 		case "domain":
 			site.URL = site.Config.Url + "." + conf.ZhuEngine.Host
@@ -104,6 +111,17 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 			site.CgiHandler = handler
 		} else {
 			site.CgiEnable = false
+		}
+
+		if v.Schedule != "" {
+			site.ScheduleEnable = true
+			site.ScheduleType = v.Schedule
+			switch v.Schedule {
+			case "round":
+				schedulor := new(RoundRobinSchedulor)
+				schedulor.Init(site)
+				site.Schedulor = schedulor
+			}
 		}
 
 		log.Info(site.Name, "启动成功：", site.Config.Server)

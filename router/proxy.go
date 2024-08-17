@@ -33,6 +33,9 @@ func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		scriptPath := filepath.Join(s.Config.Server, filename)
 		handler := s.GenerateCgiHandler(scriptPath)
 		handler.ServeHTTP(rw, req)
+	} else if s.ScheduleEnable {
+		// 启用了负载均衡
+		s.Schedulor.Pick(s).SendHttp(rw, req)
 	} else {
 		s.SendHttp(rw, req)
 	}
