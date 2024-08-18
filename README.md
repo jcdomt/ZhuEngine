@@ -40,7 +40,7 @@ type=解析类型： pattern / domain
 url=解析子域名或路径
 server=服务器配置
 autorun=是否自动运行
-exec=自动域名的脚本
+exec=自动运行的脚本
 schedule=负载均衡调度器
 cgi=CGI名称
 ```
