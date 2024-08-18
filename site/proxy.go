@@ -11,9 +11,12 @@ import (
 )
 
 func (s *Site) SendHttp(rw http.ResponseWriter, req *http.Request) *http.Response {
+	return s.SendHttpWithIp(rw, req, s.Server)
+}
+func (s *Site) SendHttpWithIp(rw http.ResponseWriter, req *http.Request, ip string) *http.Response {
 	// 检查是否是 WebSocket 请求
 	if isWebSocketRequest(req) {
-		return s.handleWebSocket(rw, req)
+		return s.handleWebSocket(rw, req, ip)
 	}
 
 	transport := http.DefaultTransport
@@ -25,7 +28,7 @@ func (s *Site) SendHttp(rw http.ResponseWriter, req *http.Request) *http.Respons
 	// 正式的后台服务器地址
 	//target := "http://" + s.Server
 	outReq.URL.Scheme = "http"
-	outReq.URL.Host = s.Server
+	outReq.URL.Host = ip
 	outReq.URL.Path = req.URL.Path
 	outReq.URL.RawQuery = req.URL.RawQuery
 
@@ -62,10 +65,10 @@ func isWebSocketRequest(req *http.Request) bool {
 	return strings.Contains(connectionHeader, "upgrade") && upgradeHeader == "websocket"
 }
 
-func (s *Site) handleWebSocket(rw http.ResponseWriter, req *http.Request) *http.Response {
+func (s *Site) handleWebSocket(rw http.ResponseWriter, req *http.Request, ip string) *http.Response {
 	// 初始化 WebSocket 连接到后端服务器
 	dialer := websocket.Dialer{}
-	targetURL := "ws://" + s.Server + req.URL.Path + "?" + req.URL.RawQuery
+	targetURL := "ws://" + ip + req.URL.Path + "?" + req.URL.RawQuery
 
 	// 移除不允许重复的头部字段
 	reqHeaders := http.Header{}

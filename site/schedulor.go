@@ -9,11 +9,13 @@ import (
 
 type Schedulor interface {
 	Init(*Site) error
-	Pick(*Site) *Site
+	Pick(*Site) string
 }
 
 // 轮询算法调度器
 type RoundRobinSchedulor struct {
+	site *Site
+
 	m     sync.Mutex
 	next  int
 	items []string
@@ -25,14 +27,14 @@ func (s *RoundRobinSchedulor) Init(site *Site) error {
 		return errors.New("没有可用项目")
 	}
 	s.items = ip_arr
+	s.site = site
 	return nil
 }
 
-func (s *RoundRobinSchedulor) Pick(site *Site) *Site {
+func (s *RoundRobinSchedulor) Pick(site *Site) string {
 	s.m.Lock()
 	r := s.items[s.next]
 	s.next = (s.next + 1) % len(s.items)
 	s.m.Unlock()
-	site.Server = r
-	return site
+	return r
 }

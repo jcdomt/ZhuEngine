@@ -35,7 +35,9 @@ func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		handler.ServeHTTP(rw, req)
 	} else if s.ScheduleEnable {
 		// 启用了负载均衡
-		s.Schedulor.Pick(s).SendHttp(rw, req)
+		ip := s.Schedulor.Pick(s)
+		s.SendHttpWithIp(rw, req, ip)
+
 	} else {
 		s.SendHttp(rw, req)
 	}
