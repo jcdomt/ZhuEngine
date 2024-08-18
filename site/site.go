@@ -121,6 +121,10 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 				schedulor := new(RoundRobinSchedulor)
 				schedulor.Init(site)
 				site.Schedulor = schedulor
+			case "random":
+				schedulor := new(RandomSchedulor)
+				schedulor.Init(site)
+				site.Schedulor = schedulor
 			}
 		}
 
