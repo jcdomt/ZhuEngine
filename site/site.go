@@ -4,6 +4,7 @@ package site
 import (
 	"ZhuEngine/config"
 	"net/http/cgi"
+	"strings"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -61,7 +62,7 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 		site := new(Site)
 		site.Name = k
 		site.Config = v
-		site.Server = v.Server
+		site.Server = loadSiteServer(v.Server)
 		switch site.Config.Type {
 		case "domain":
 			site.URL = site.Config.Url + "." + conf.ZhuEngine.Host
@@ -132,4 +133,12 @@ func LoadSites(conf *config.Config) ([]*Site, []*Site, []*Site) {
 		sites = append(sites, site)
 	}
 	return sites, sites_subdomain, sites_subpatter
+}
+
+func loadSiteServer(cfgset_server string) string {
+	if strings.HasPrefix(cfgset_server, "__table__") {
+		return config.GetScheduleTable(cfgset_server[len("__table__"):])
+	} else {
+		return cfgset_server
+	}
 }

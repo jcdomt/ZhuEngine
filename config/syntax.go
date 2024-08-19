@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -31,43 +32,72 @@ func parseMain(filepath string) (string, error) {
 	}
 	file_str := string(b)
 
-	file_str, err = parseIniInclude(file_str, filepath)
-	if err != nil {
-		return "", err
-	}
-
-	return file_str, nil
-}
-
-func parseIniInclude(origin string, path string) (string, error) {
-	tokens := getIniTokens(origin)
-	str := origin
+	tokens := getIniTokens(file_str)
+	//str := origin
 
 	for i, token := range tokens {
 		index := strconv.Itoa(i + 1)
 
 		if strings.HasPrefix(token, "#include ") {
-			re := regexp.MustCompile(`#include\s+(.+)`)
+			file_str, err = parseIniInclude(token, file_str)
+			if err != nil {
+				return "", errors.New(filepath + ": " + index + "行：" + err.Error())
+			}
+		}
 
-			// 查找匹配项
-			matches := re.FindStringSubmatch(token)
-
-			if len(matches) > 1 {
-				// 提取出文件路径
-				filepath := matches[1]
-
-				temp_str, err := parseMain(filepath)
-				if err != nil {
-					return "", errors.New(path + ": " + index + "行：文件路径解析错误：" + err.Error())
-				}
-				str = strings.Replace(str, token, temp_str, 1)
-			} else {
-				return "", errors.New(path + ": " + index + "行：未找到文件路径")
+		if strings.HasPrefix(token, "#schedule ") {
+			file_str, err = parseIniScheduleTable(token, file_str, tokens, i)
+			if err != nil {
+				return "", errors.New(filepath + ": " + index + "行：" + err.Error())
 			}
 		}
 	}
+	return file_str, nil
+}
+
+func parseIniInclude(token string, origin string) (string, error) {
+	re := regexp.MustCompile(`#include\s+(.+)`)
+	str := origin
+
+	// 查找匹配项
+	matches := re.FindStringSubmatch(token)
+
+	if len(matches) > 1 {
+		// 提取出文件路径
+		filepath := matches[1]
+
+		temp_str, err := parseMain(filepath)
+		if err != nil {
+			return "", errors.New("文件路径解析错误：" + err.Error())
+		}
+		str = strings.Replace(origin, token, temp_str, 1)
+	} else {
+		return "", errors.New("未找到文件路径")
+	}
 
 	return str, nil
+}
+
+// 解析调度器配置表
+func parseIniScheduleTable(head_token string, origin string, tokens []string, index int) (string, error) {
+	table_name := strings.Fields(head_token)[1]
+	table_content := ""
+	for i := index + 1; i < len(tokens); i++ {
+		token := tokens[i]
+		if token == "#table_end" {
+			break
+		}
+		a := strings.Fields(token)
+		// a[0] 是 #
+		if a[1] == "ip" && a[2] == "weight" {
+			// 表头，无所谓
+			continue
+		}
+		table_content = table_content + fmt.Sprintf("%s?%s,", a[1], a[2])
+
+	}
+	SetScheduleTable(table_name, strings.TrimRight(table_content, ","))
+	return origin, nil
 }
 
 func getIniTokens(str string) []string {

@@ -22,11 +22,15 @@ type RoundRobinSchedulor struct {
 }
 
 func (s *RoundRobinSchedulor) Init(site *Site) error {
-	ip_arr := strings.Split(site.Config.Server, ",")
+	ip_arr := strings.Split(site.Server, ",")
 	if len(ip_arr) == 0 {
 		return errors.New("没有可用项目")
 	}
-	s.items = ip_arr
+	for _, ip_weight := range ip_arr {
+		a := strings.Split(ip_weight, "?")
+		ip := a[0]
+		s.items = append(s.items, ip)
+	}
 	return nil
 }
 
@@ -45,7 +49,7 @@ type RandomSchedulor struct {
 }
 
 func (s *RandomSchedulor) Init(site *Site) error {
-	ip_arr := strings.Split(site.Config.Server, ",")
+	ip_arr := strings.Split(site.Server, ",")
 	if len(ip_arr) == 0 {
 		return errors.New("没有可用项目")
 	}
